@@ -194,8 +194,19 @@ fn map_tool_to_actions(input: &HookInput) -> Option<Vec<(Action, ActionContext)>
             let trimmed = command.trim();
 
             // Git push → check as GitPush + RunCmd
-            if trimmed.starts_with("git push") {
-                let branch = trimmed
+            // Check contains() not just starts_with() because Claude often chains:
+            //   git add . && git commit -m "..." && git push origin main
+            if trimmed.starts_with("git push")
+                || trimmed.contains("&& git push")
+                || trimmed.contains("; git push")
+            {
+                // Extract branch from the git push portion
+                let push_part = if let Some(idx) = trimmed.find("git push") {
+                    &trimmed[idx..]
+                } else {
+                    trimmed
+                };
+                let branch = push_part
                     .strip_prefix("git push")
                     .unwrap_or("")
                     .split_whitespace()
