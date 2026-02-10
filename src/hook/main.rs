@@ -105,10 +105,21 @@ fn main() {
         .clone()
         .unwrap_or_else(|| "claude-hook".to_string());
 
-    // Evaluate ALL actions — if any is denied/requires-approval, block.
+    // Evaluate ALL actions — if any is denied, block.
     // This handles dual-action commands like `rm -rf /` which is both
     // RunCmd (matches command-pattern rules) and Delete (matches path rules).
+    //
+    // When an action is approved by the user (e.g., GitPush), we skip
+    // remaining checks — the user explicitly OK'd this command.
+    let mut user_approved = false;
+
     for (action, context) in &actions {
+        // If user already approved this command via a dialog, skip further checks.
+        // e.g., user approved GitPush → don't also block the RunCmd for "git push".
+        if user_approved {
+            break;
+        }
+
         let start = std::time::Instant::now();
         let decision = engine.evaluate(action, context);
         let eval_us = start.elapsed().as_micros() as u64;
@@ -126,14 +137,14 @@ fn main() {
                 process::exit(2);
             }
             Decision::RequiresApproval { reason, .. } => {
-                // In hook mode, we can't do interactive approval.
-                // Block it and tell the user to approve via lawctl.
-                eprintln!(
-                    "[lawctl] NEEDS APPROVAL: {} — {}. Run `lawctl log` to review.",
-                    describe_action(action, &hook_input),
-                    reason
-                );
-                process::exit(2);
+                let action_desc = describe_action(action, &hook_input);
+                if prompt_native_approval(&action_desc, reason) {
+                    eprintln!("[lawctl] APPROVED: {}", action_desc);
+                    user_approved = true;
+                } else {
+                    eprintln!("[lawctl] DENIED: {} — user declined", action_desc);
+                    process::exit(2);
+                }
             }
             Decision::Allowed { .. } => {
                 // This action is fine — continue checking the others
@@ -143,6 +154,61 @@ fn main() {
 
     // All actions allowed — exit 0 (silent success)
     process::exit(0);
+}
+
+/// Prompt the user for approval via native OS dialog.
+///
+/// On macOS: uses osascript to show a native dialog with Approve/Deny buttons.
+/// On Linux: falls back to blocking (no native dialog available).
+///
+/// Returns true if the user approved, false otherwise.
+fn prompt_native_approval(action_desc: &str, reason: &str) -> bool {
+    if cfg!(target_os = "macos") {
+        prompt_macos_dialog(action_desc, reason)
+    } else {
+        // No native dialog on Linux — block by default
+        eprintln!("[lawctl] Approval required but no UI available on this platform.");
+        false
+    }
+}
+
+/// Show a native macOS dialog using osascript.
+/// Blocks until the user clicks Approve or Deny.
+fn prompt_macos_dialog(action_desc: &str, reason: &str) -> bool {
+    // Sanitize strings for AppleScript (escape backslashes and quotes)
+    let safe_action = action_desc
+        .replace('\\', "\\\\")
+        .replace('"', "\\\"")
+        .replace('\n', " ");
+    let safe_reason = reason
+        .replace('\\', "\\\\")
+        .replace('"', "\\\"")
+        .replace('\n', " ");
+
+    let script = format!(
+        r#"display dialog "lawctl — Approval Required\n\n{}\n\n{}" buttons {{"Deny", "Approve"}} default button "Deny" with title "lawctl" with icon caution"#,
+        safe_action, safe_reason
+    );
+
+    match std::process::Command::new("osascript")
+        .arg("-e")
+        .arg(format!("button returned of ({})", script))
+        .output()
+    {
+        Ok(output) => {
+            if output.status.success() {
+                let button = String::from_utf8_lossy(&output.stdout).trim().to_string();
+                button == "Approve"
+            } else {
+                // User cancelled or error — treat as deny
+                false
+            }
+        }
+        Err(e) => {
+            eprintln!("[lawctl] Failed to show approval dialog: {}", e);
+            false
+        }
+    }
 }
 
 /// Map a Claude Code tool call to lawctl Action(s) + ActionContext.
