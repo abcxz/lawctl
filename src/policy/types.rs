@@ -178,11 +178,8 @@ impl Rule {
                         conditions.if_path_matches.join(",")
                     ));
                 }
-                if conditions.max_diff_lines.is_some() {
-                    desc.push_str(&format!(
-                        ":max_diff_lines:{}",
-                        conditions.max_diff_lines.unwrap()
-                    ));
+                if let Some(max_lines) = conditions.max_diff_lines {
+                    desc.push_str(&format!(":max_diff_lines:{}", max_lines));
                 }
                 desc
             }

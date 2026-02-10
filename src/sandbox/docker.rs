@@ -96,12 +96,11 @@ impl DockerSandbox {
     pub async fn start(&mut self) -> Result<String> {
         self.ensure_image().await?;
 
-        let container_name = self.config.container_name.clone().unwrap_or_else(|| {
-            format!(
-                "lawctl-{}",
-                &uuid::Uuid::new_v4().to_string()[..8]
-            )
-        });
+        let container_name = self
+            .config
+            .container_name
+            .clone()
+            .unwrap_or_else(|| format!("lawctl-{}", &uuid::Uuid::new_v4().to_string()[..8]));
 
         // Build mount configuration
         let mut mounts = vec![
