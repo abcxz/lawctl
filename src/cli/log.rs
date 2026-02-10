@@ -28,15 +28,9 @@ pub fn run_log(
         let entries = reader.read_latest_session()?;
         if entries.is_empty() {
             println!();
-            println!(
-                "  {} No audit logs found.",
-                "ℹ".blue()
-            );
+            println!("  {} No audit logs found.", "ℹ".blue());
             println!("  Run an agent through lawctl first:");
-            println!(
-                "    {}",
-                "lawctl run -- <your agent command>".dimmed()
-            );
+            println!("    {}", "lawctl run -- <your agent command>".dimmed());
             println!();
             return Ok(());
         }
@@ -83,10 +77,7 @@ pub fn run_log(
 
         if let (Some(start), Some(end)) = (summary.start_time, summary.end_time) {
             let duration = end - start;
-            println!(
-                "  Duration: {}",
-                format_duration(duration.num_seconds())
-            );
+            println!("  Duration: {}", format_duration(duration.num_seconds()));
         }
         println!();
     } else {
@@ -138,10 +129,7 @@ pub fn run_log_list() -> Result<()> {
         println!("  • {}", session);
     }
     println!();
-    println!(
-        "  View a session: {}",
-        "lawctl log --session <id>".dimmed()
-    );
+    println!("  View a session: {}", "lawctl log --session <id>".dimmed());
     println!();
 
     Ok(())
@@ -153,10 +141,6 @@ fn format_duration(seconds: i64) -> String {
     } else if seconds < 3600 {
         format!("{}m {}s", seconds / 60, seconds % 60)
     } else {
-        format!(
-            "{}h {}m",
-            seconds / 3600,
-            (seconds % 3600) / 60
-        )
+        format!("{}h {}m", seconds / 3600, (seconds % 3600) / 60)
     }
 }

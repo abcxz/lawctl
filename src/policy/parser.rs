@@ -146,7 +146,10 @@ fn convert_rule(raw: RawRule, index: usize) -> Result<Rule> {
     }
 
     let conditions = Conditions {
-        if_path_matches: raw.if_path_matches.map(|s| s.into_vec()).unwrap_or_default(),
+        if_path_matches: raw
+            .if_path_matches
+            .map(|s| s.into_vec())
+            .unwrap_or_default(),
         unless_path: raw.unless_path.map(|s| s.into_vec()).unwrap_or_default(),
         if_matches: raw.if_matches.map(|s| s.into_vec()).unwrap_or_default(),
         max_diff_lines: raw.max_diff_lines,

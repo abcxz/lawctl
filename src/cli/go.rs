@@ -23,10 +23,7 @@ fn detect_agent() -> Option<(&'static str, Vec<String>)> {
     for (name, cmd_parts) in agents {
         let binary = cmd_parts[0];
         if which_exists(binary) {
-            return Some((
-                name,
-                cmd_parts.iter().map(|s| s.to_string()).collect(),
-            ));
+            return Some((name, cmd_parts.iter().map(|s| s.to_string()).collect()));
         }
     }
     None
@@ -88,11 +85,7 @@ pub async fn run_go(explicit_command: Vec<String>) -> Result<()> {
         match detect_agent() {
             Some((name, cmd)) => {
                 println!();
-                println!(
-                    "  {} Detected {}, launching...",
-                    "▶".green(),
-                    name.bold()
-                );
+                println!("  {} Detected {}, launching...", "▶".green(), name.bold());
                 cmd
             }
             None => {

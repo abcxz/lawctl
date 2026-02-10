@@ -20,7 +20,12 @@ use std::sync::Arc;
 use tempfile::TempDir;
 
 /// Helper: start a gateway server and return the client + workspace path.
-async fn setup_gateway() -> (Arc<GatewayClient>, TempDir, TempDir, tokio::task::JoinHandle<()>) {
+async fn setup_gateway() -> (
+    Arc<GatewayClient>,
+    TempDir,
+    TempDir,
+    tokio::task::JoinHandle<()>,
+) {
     let workspace = TempDir::new().unwrap();
     let log_dir = TempDir::new().unwrap();
 
@@ -79,7 +84,11 @@ async fn setup_gateway() -> (Arc<GatewayClient>, TempDir, TempDir, tokio::task::
 }
 
 /// Run a blocking client call without deadlocking the async runtime.
-async fn blocking_write(client: &Arc<GatewayClient>, path: &str, content: &str) -> lawctl::gateway::protocol::GatewayResponse {
+async fn blocking_write(
+    client: &Arc<GatewayClient>,
+    path: &str,
+    content: &str,
+) -> lawctl::gateway::protocol::GatewayResponse {
     let c = client.clone();
     let p = path.to_string();
     let ct = content.to_string();
@@ -88,7 +97,10 @@ async fn blocking_write(client: &Arc<GatewayClient>, path: &str, content: &str) 
         .unwrap()
 }
 
-async fn blocking_delete(client: &Arc<GatewayClient>, path: &str) -> lawctl::gateway::protocol::GatewayResponse {
+async fn blocking_delete(
+    client: &Arc<GatewayClient>,
+    path: &str,
+) -> lawctl::gateway::protocol::GatewayResponse {
     let c = client.clone();
     let p = path.to_string();
     tokio::task::spawn_blocking(move || c.delete_file(&p).unwrap())
@@ -96,7 +108,10 @@ async fn blocking_delete(client: &Arc<GatewayClient>, path: &str) -> lawctl::gat
         .unwrap()
 }
 
-async fn blocking_run_cmd(client: &Arc<GatewayClient>, cmd: &str) -> lawctl::gateway::protocol::GatewayResponse {
+async fn blocking_run_cmd(
+    client: &Arc<GatewayClient>,
+    cmd: &str,
+) -> lawctl::gateway::protocol::GatewayResponse {
     let c = client.clone();
     let cmd = cmd.to_string();
     tokio::task::spawn_blocking(move || c.run_cmd(&cmd).unwrap())
@@ -104,7 +119,10 @@ async fn blocking_run_cmd(client: &Arc<GatewayClient>, cmd: &str) -> lawctl::gat
         .unwrap()
 }
 
-async fn blocking_git_push(client: &Arc<GatewayClient>, branch: &str) -> lawctl::gateway::protocol::GatewayResponse {
+async fn blocking_git_push(
+    client: &Arc<GatewayClient>,
+    branch: &str,
+) -> lawctl::gateway::protocol::GatewayResponse {
     let c = client.clone();
     let b = branch.to_string();
     tokio::task::spawn_blocking(move || c.git_push(&b).unwrap())
@@ -118,7 +136,11 @@ async fn test_e2e_write_allowed() {
 
     // Write to src/ should be allowed
     let response = blocking_write(&client, "src/new_file.rs", "fn new() {}").await;
-    assert!(response.allowed, "Write to src/ should be allowed: {:?}", response.error);
+    assert!(
+        response.allowed,
+        "Write to src/ should be allowed: {:?}",
+        response.error
+    );
 
     // Verify the file was actually written
     let content = std::fs::read_to_string(workspace.path().join("src/new_file.rs")).unwrap();
@@ -167,7 +189,11 @@ async fn test_e2e_safe_command_allowed() {
 
     // ls should be allowed by the test policy
     let response = blocking_run_cmd(&client, "ls -la").await;
-    assert!(response.allowed, "ls should be allowed: {:?}", response.error);
+    assert!(
+        response.allowed,
+        "ls should be allowed: {:?}",
+        response.error
+    );
     assert!(response.result.is_some());
 
     handle.abort();

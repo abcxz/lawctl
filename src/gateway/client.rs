@@ -28,21 +28,21 @@ impl GatewayClient {
 
     /// Create a client using the LAWCTL_SOCKET environment variable.
     pub fn from_env() -> Result<Self> {
-        let socket_path = std::env::var("LAWCTL_SOCKET")
-            .context("LAWCTL_SOCKET environment variable not set. Are you running inside lawctl?")?;
+        let socket_path = std::env::var("LAWCTL_SOCKET").context(
+            "LAWCTL_SOCKET environment variable not set. Are you running inside lawctl?",
+        )?;
         Ok(Self::new(socket_path))
     }
 
     /// Send a request and receive a response (synchronous).
     /// Each call opens a new connection — simple and reliable.
     pub fn send(&self, request: &GatewayRequest) -> Result<GatewayResponse> {
-        let mut stream = UnixStream::connect(&self.socket_path)
-            .with_context(|| {
-                format!(
-                    "Failed to connect to lawctl gateway at {}. Is lawctl running?",
-                    self.socket_path.display()
-                )
-            })?;
+        let mut stream = UnixStream::connect(&self.socket_path).with_context(|| {
+            format!(
+                "Failed to connect to lawctl gateway at {}. Is lawctl running?",
+                self.socket_path.display()
+            )
+        })?;
 
         // Send the request as a JSON line
         let json = serde_json::to_string(request)?;

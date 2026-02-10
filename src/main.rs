@@ -72,11 +72,7 @@ enum Commands {
         action: Option<String>,
 
         /// Filter by decision
-        #[arg(
-            short,
-            long,
-            help = "Filter: allowed, denied, approved"
-        )]
+        #[arg(short, long, help = "Filter: allowed, denied, approved")]
         decision: Option<String>,
 
         /// Limit number of entries shown
@@ -100,7 +96,6 @@ enum Commands {
     },
 
     // ── Power user commands (hidden from main help) ──
-
     /// Create a policy file from a template [advanced]
     #[command(hide = true)]
     Init {
@@ -185,10 +180,7 @@ async fn main() {
             command,
         }) => {
             if command.is_empty() {
-                eprintln!(
-                    "  {} No agent command specified.",
-                    "✗".red()
-                );
+                eprintln!("  {} No agent command specified.", "✗".red());
                 eprintln!("  Usage: lawctl run -- <agent command>");
                 std::process::exit(1);
             }
@@ -260,20 +252,14 @@ fn show_status(policy_path: &std::path::Path) -> anyhow::Result<()> {
         "lawctl".bold(),
         "— your project is protected".green()
     );
-    println!(
-        "  {}",
-        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━".dimmed()
-    );
+    println!("  {}", "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━".dimmed());
     println!();
     println!(
         "  Policy: {} ({} rules)",
         policy.law.cyan(),
         policy.rules.len()
     );
-    println!(
-        "  File:   {}",
-        policy_path.display().to_string().dimmed()
-    );
+    println!("  File:   {}", policy_path.display().to_string().dimmed());
 
     // Show recent activity if any
     if let Ok(reader) = audit::AuditReader::new() {
@@ -292,10 +278,7 @@ fn show_status(policy_path: &std::path::Path) -> anyhow::Result<()> {
     }
 
     println!();
-    println!(
-        "  {}",
-        "Commands:".dimmed()
-    );
+    println!("  {}", "Commands:".dimmed());
     println!(
         "    {}          run your agent with protection",
         "lawctl go".bold()
@@ -304,10 +287,7 @@ fn show_status(policy_path: &std::path::Path) -> anyhow::Result<()> {
         "    {}         see what your agent did",
         "lawctl log".bold()
     );
-    println!(
-        "    {}       validate your policy",
-        "lawctl check".bold()
-    );
+    println!("    {}       validate your policy", "lawctl check".bold());
     println!(
         "    {}       reconfigure from scratch",
         "lawctl setup".bold()
@@ -324,19 +304,12 @@ fn run_check(policy_path: &std::path::Path) -> anyhow::Result<()> {
             match policy::PolicyEngine::new(p.clone()) {
                 Ok(_engine) => {
                     println!();
-                    println!(
-                        "  {} Policy is valid!",
-                        "✓".green().bold()
-                    );
+                    println!("  {} Policy is valid!", "✓".green().bold());
                     println!("  Law:   {}", p.law.cyan());
                     println!("  Rules: {}", p.rules.len());
                     println!();
                     for (i, rule) in p.rules.iter().enumerate() {
-                        println!(
-                            "  {}. {}",
-                            i + 1,
-                            rule.describe()
-                        );
+                        println!("  {}. {}", i + 1, rule.describe());
                     }
 
                     // Run the linter
@@ -359,10 +332,7 @@ fn run_check(policy_path: &std::path::Path) -> anyhow::Result<()> {
                         }
                     } else {
                         println!();
-                        println!(
-                            "  {} No issues found — policy looks solid.",
-                            "✓".green()
-                        );
+                        println!("  {} No issues found — policy looks solid.", "✓".green());
                     }
 
                     println!();

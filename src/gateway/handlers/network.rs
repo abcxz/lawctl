@@ -17,7 +17,9 @@ pub fn validate_network_request(url: &str) -> Result<String> {
 /// Extract the domain from a URL.
 pub fn extract_domain(url: &str) -> Option<String> {
     // Simple extraction — handles http(s)://domain/path
-    let url = url.strip_prefix("https://").or_else(|| url.strip_prefix("http://"))?;
+    let url = url
+        .strip_prefix("https://")
+        .or_else(|| url.strip_prefix("http://"))?;
     let domain = url.split('/').next()?;
     let domain = domain.split(':').next()?; // Remove port
     Some(domain.to_string())

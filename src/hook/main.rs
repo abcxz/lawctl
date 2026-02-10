@@ -151,10 +151,14 @@ fn main() {
 fn map_tool_to_actions(input: &HookInput) -> Option<Vec<(Action, ActionContext)>> {
     match input.tool_name.as_str() {
         "Write" => {
-            let file_path = input.tool_input.get("file_path")
+            let file_path = input
+                .tool_input
+                .get("file_path")
                 .and_then(|v| v.as_str())
                 .unwrap_or("unknown");
-            let content = input.tool_input.get("content")
+            let content = input
+                .tool_input
+                .get("content")
                 .and_then(|v| v.as_str())
                 .unwrap_or("");
 
@@ -164,10 +168,14 @@ fn map_tool_to_actions(input: &HookInput) -> Option<Vec<(Action, ActionContext)>
         }
 
         "Edit" => {
-            let file_path = input.tool_input.get("file_path")
+            let file_path = input
+                .tool_input
+                .get("file_path")
                 .and_then(|v| v.as_str())
                 .unwrap_or("unknown");
-            let new_string = input.tool_input.get("new_string")
+            let new_string = input
+                .tool_input
+                .get("new_string")
                 .and_then(|v| v.as_str())
                 .unwrap_or("");
 
@@ -177,7 +185,9 @@ fn map_tool_to_actions(input: &HookInput) -> Option<Vec<(Action, ActionContext)>
         }
 
         "Bash" => {
-            let command = input.tool_input.get("command")
+            let command = input
+                .tool_input
+                .get("command")
                 .and_then(|v| v.as_str())
                 .unwrap_or("");
 
@@ -192,8 +202,7 @@ fn map_tool_to_actions(input: &HookInput) -> Option<Vec<(Action, ActionContext)>
                     .split_whitespace()
                     .last()
                     .unwrap_or("main");
-                let cmd_ctx = ActionContext::new("shell")
-                    .with_command(command.to_string());
+                let cmd_ctx = ActionContext::new("shell").with_command(command.to_string());
                 return Some(vec![
                     (Action::GitPush, ActionContext::new(branch)),
                     (Action::RunCmd, cmd_ctx),
@@ -205,14 +214,14 @@ fn map_tool_to_actions(input: &HookInput) -> Option<Vec<(Action, ActionContext)>
             // AND `deny: delete unless_path: /tmp` also catches it.
             if trimmed.starts_with("rm ") || trimmed.starts_with("rm -") {
                 let parts: Vec<&str> = trimmed.split_whitespace().collect();
-                let targets: Vec<&str> = parts.iter()
+                let targets: Vec<&str> = parts
+                    .iter()
                     .skip(1)
                     .filter(|p| !p.starts_with('-'))
                     .copied()
                     .collect();
 
-                let cmd_ctx = ActionContext::new("shell")
-                    .with_command(command.to_string());
+                let cmd_ctx = ActionContext::new("shell").with_command(command.to_string());
                 let mut actions = vec![(Action::RunCmd, cmd_ctx)];
 
                 if let Some(target) = targets.first() {
@@ -222,29 +231,32 @@ fn map_tool_to_actions(input: &HookInput) -> Option<Vec<(Action, ActionContext)>
             }
 
             // Normal command → just RunCmd
-            let ctx = ActionContext::new("shell")
-                .with_command(command.to_string());
+            let ctx = ActionContext::new("shell").with_command(command.to_string());
             Some(vec![(Action::RunCmd, ctx)])
         }
 
         "WebFetch" | "WebSearch" => {
-            let url = input.tool_input.get("url")
+            let url = input
+                .tool_input
+                .get("url")
                 .and_then(|v| v.as_str())
                 .unwrap_or("");
-            let ctx = ActionContext::new(url)
-                .with_domain(extract_domain(url).unwrap_or_default());
+            let ctx = ActionContext::new(url).with_domain(extract_domain(url).unwrap_or_default());
             Some(vec![(Action::Network, ctx)])
         }
 
         "NotebookEdit" => {
-            let notebook = input.tool_input.get("notebook_path")
+            let notebook = input
+                .tool_input
+                .get("notebook_path")
                 .and_then(|v| v.as_str())
                 .unwrap_or("unknown");
-            let content = input.tool_input.get("new_source")
+            let content = input
+                .tool_input
+                .get("new_source")
                 .and_then(|v| v.as_str())
                 .unwrap_or("");
-            let ctx = ActionContext::new(notebook)
-                .with_diff(content.to_string());
+            let ctx = ActionContext::new(notebook).with_diff(content.to_string());
             Some(vec![(Action::Write, ctx)])
         }
 
@@ -273,11 +285,15 @@ fn find_policy(start: &Path) -> Option<PathBuf> {
 /// Describe what action we're checking (for error messages).
 fn describe_action(action: &Action, input: &HookInput) -> String {
     let target = match input.tool_name.as_str() {
-        "Write" | "Edit" => input.tool_input.get("file_path")
+        "Write" | "Edit" => input
+            .tool_input
+            .get("file_path")
             .and_then(|v| v.as_str())
             .unwrap_or("unknown")
             .to_string(),
-        "Bash" => input.tool_input.get("command")
+        "Bash" => input
+            .tool_input
+            .get("command")
             .and_then(|v| v.as_str())
             .unwrap_or("unknown")
             .chars()

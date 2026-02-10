@@ -89,11 +89,7 @@ impl AuditReader {
 
         let mut sessions: Vec<String> = fs::read_dir(&self.log_dir)?
             .filter_map(|e| e.ok())
-            .filter(|e| {
-                e.path()
-                    .extension()
-                    .map_or(false, |ext| ext == "jsonl")
-            })
+            .filter(|e| e.path().extension().map_or(false, |ext| ext == "jsonl"))
             .filter_map(|e| {
                 e.path()
                     .file_stem()

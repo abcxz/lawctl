@@ -43,11 +43,7 @@ fn test_secrets_protection() {
     for path in &[".env", "production.env", ".ssh/id_rsa", "server.pem"] {
         let ctx = ActionContext::new(*path);
         let decision = engine.evaluate(&Action::Write, &ctx);
-        assert!(
-            decision.is_denied(),
-            "Writing to {} should be denied",
-            path
-        );
+        assert!(decision.is_denied(), "Writing to {} should be denied", path);
     }
 }
 
@@ -97,11 +93,7 @@ fn test_safe_commands_allowed() {
     for cmd in &["cargo build", "cargo test", "npm install", "ls -la"] {
         let ctx = ActionContext::new("shell").with_command(*cmd);
         let decision = engine.evaluate(&Action::RunCmd, &ctx);
-        assert!(
-            decision.is_allowed(),
-            "Command '{}' should be allowed",
-            cmd
-        );
+        assert!(decision.is_allowed(), "Command '{}' should be allowed", cmd);
     }
 }
 
@@ -119,12 +111,18 @@ fn test_diff_line_limit() {
     let engine = test_engine();
 
     // Small diff — within limit
-    let small_diff = (0..50).map(|i| format!("+ line {}", i)).collect::<Vec<_>>().join("\n");
+    let small_diff = (0..50)
+        .map(|i| format!("+ line {}", i))
+        .collect::<Vec<_>>()
+        .join("\n");
     let ctx = ActionContext::new("src/main.rs").with_diff(small_diff);
     assert!(engine.evaluate(&Action::Write, &ctx).is_allowed());
 
     // Large diff — exceeds the 100 line limit
-    let large_diff = (0..200).map(|i| format!("+ line {}", i)).collect::<Vec<_>>().join("\n");
+    let large_diff = (0..200)
+        .map(|i| format!("+ line {}", i))
+        .collect::<Vec<_>>()
+        .join("\n");
     let ctx = ActionContext::new("src/main.rs").with_diff(large_diff);
     // The allow rule won't match (too many lines), but write is non-destructive
     // so default is allow. This is correct — the limit is on the allow rule,

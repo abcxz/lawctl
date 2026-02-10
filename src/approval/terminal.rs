@@ -79,7 +79,10 @@ fn show_approval_prompt(request: &ApprovalRequest, timeout: Duration) -> Result<
             "║  Action:  {:<47}║\n",
             format!("{}", request.action)
         )),
-        Print(format!("║  Target:  {:<47}║\n", truncate(&request.target, 47))),
+        Print(format!(
+            "║  Target:  {:<47}║\n",
+            truncate(&request.target, 47)
+        )),
     )?;
 
     if let Some(ref preview) = request.payload_preview {

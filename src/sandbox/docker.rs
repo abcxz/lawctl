@@ -61,8 +61,8 @@ pub struct DockerSandbox {
 impl DockerSandbox {
     /// Create a new sandbox manager (connects to Docker daemon).
     pub async fn new(config: SandboxConfig) -> Result<Self> {
-        let docker =
-            Docker::connect_with_local_defaults().context("Failed to connect to Docker daemon. Is Docker running?")?;
+        let docker = Docker::connect_with_local_defaults()
+            .context("Failed to connect to Docker daemon. Is Docker running?")?;
 
         // Verify Docker is accessible
         docker
@@ -96,11 +96,12 @@ impl DockerSandbox {
     pub async fn start(&mut self) -> Result<String> {
         self.ensure_image().await?;
 
-        let container_name = self
-            .config
-            .container_name
-            .clone()
-            .unwrap_or_else(|| format!("lawctl-{}", uuid::Uuid::new_v4().to_string()[..8].to_string()));
+        let container_name = self.config.container_name.clone().unwrap_or_else(|| {
+            format!(
+                "lawctl-{}",
+                uuid::Uuid::new_v4().to_string()[..8].to_string()
+            )
+        });
 
         // Build mount configuration
         let mut mounts = vec![
@@ -135,7 +136,9 @@ impl DockerSandbox {
             .env_vars
             .iter()
             .map(|(k, v)| format!("{}={}", k, v))
-            .chain(std::iter::once("LAWCTL_SOCKET=/tmp/lawctl.sock".to_string()))
+            .chain(std::iter::once(
+                "LAWCTL_SOCKET=/tmp/lawctl.sock".to_string(),
+            ))
             .chain(std::iter::once("LAWCTL_WORKSPACE=/workspace".to_string()))
             .collect();
 
@@ -186,10 +189,7 @@ impl DockerSandbox {
 
     /// Wait for the container to finish and return the exit code.
     pub async fn wait(&self) -> Result<i64> {
-        let container_id = self
-            .container_id
-            .as_ref()
-            .context("No container running")?;
+        let container_id = self.container_id.as_ref().context("No container running")?;
 
         let opts = WaitContainerOptions {
             condition: "not-running",

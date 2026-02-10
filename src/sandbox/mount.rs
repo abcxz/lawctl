@@ -14,12 +14,12 @@ const EXCLUDED_PATHS: &[&str] = &[
     ".env.staging",
     ".ssh",
     ".git/credentials",
-    ".git/config",    // May contain tokens
+    ".git/config", // May contain tokens
     ".aws",
     ".gcloud",
     ".azure",
     ".docker/config.json",
-    ".npmrc",         // May contain auth tokens
+    ".npmrc", // May contain auth tokens
     ".pypirc",
     ".cargo/credentials",
     ".cargo/credentials.toml",
@@ -31,7 +31,7 @@ const EXCLUDED_PATHS: &[&str] = &[
 
 /// Paths that should be mounted read-only (not writable by the agent).
 const READONLY_PATHS: &[&str] = &[
-    ".git",           // Agent reads git state but can't modify directly
+    ".git", // Agent reads git state but can't modify directly
     "node_modules",
     ".venv",
     "vendor",
@@ -58,8 +58,7 @@ impl MountConfig {
             .filter(|p| {
                 // Only exclude paths that actually exist
                 // (don't error on missing .aws, etc.)
-                p.exists()
-                    || p.to_string_lossy().contains('*') // Keep glob patterns
+                p.exists() || p.to_string_lossy().contains('*') // Keep glob patterns
             })
             .collect();
 
@@ -80,20 +79,16 @@ impl MountConfig {
     pub fn is_excluded(&self, path: &Path) -> bool {
         self.excluded.iter().any(|excluded| {
             path.starts_with(excluded)
-                || path
-                    .file_name()
-                    .map_or(false, |name| {
-                        let name = name.to_string_lossy();
-                        EXCLUDED_PATHS
-                            .iter()
-                            .any(|pattern| {
-                                if pattern.starts_with('*') {
-                                    name.ends_with(&pattern[1..])
-                                } else {
-                                    name.as_ref() == *pattern
-                                }
-                            })
+                || path.file_name().map_or(false, |name| {
+                    let name = name.to_string_lossy();
+                    EXCLUDED_PATHS.iter().any(|pattern| {
+                        if pattern.starts_with('*') {
+                            name.ends_with(&pattern[1..])
+                        } else {
+                            name.as_ref() == *pattern
+                        }
                     })
+                })
         })
     }
 

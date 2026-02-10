@@ -94,10 +94,7 @@ pub fn run_init(template: Option<&str>, output_path: Option<&str>) -> Result<()>
         output_file.display().to_string().bold()
     );
     println!();
-    println!(
-        "  Detected project type: {}",
-        project_type.name().cyan()
-    );
+    println!("  Detected project type: {}", project_type.name().cyan());
     println!("  Template: {}", template_name.cyan());
     println!();
     println!("  {} What this policy does:", "ℹ".blue());
@@ -134,10 +131,7 @@ pub fn run_init(template: Option<&str>, output_path: Option<&str>) -> Result<()>
         "    2. Run your agent through lawctl: {}",
         "lawctl run -- <your agent command>".dimmed()
     );
-    println!(
-        "    3. Check what happened: {}",
-        "lawctl log".dimmed()
-    );
+    println!("    3. Check what happened: {}", "lawctl log".dimmed());
     println!();
 
     Ok(())

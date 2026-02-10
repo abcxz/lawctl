@@ -42,10 +42,7 @@ pub fn run_setup() -> Result<()> {
     let policy_path = cwd.join(".lawctl.yaml");
     if policy_path.exists() {
         println!();
-        println!(
-            "  {} You're already set up!",
-            "✓".green().bold()
-        );
+        println!("  {} You're already set up!", "✓".green().bold());
         println!(
             "  Policy file: {}",
             policy_path.display().to_string().dimmed()
@@ -53,7 +50,8 @@ pub fn run_setup() -> Result<()> {
         println!();
         println!("  Just use your agent normally — lawctl is watching.");
         println!();
-        println!("  To reconfigure, delete .lawctl.yaml and run {} again.",
+        println!(
+            "  To reconfigure, delete .lawctl.yaml and run {} again.",
             "lawctl setup".bold()
         );
         println!();
@@ -79,19 +77,17 @@ pub fn run_setup() -> Result<()> {
 
     // ── Step 4: Install agent hook ──
     let hook_installed = match agent.as_deref() {
-        Some("claude-code") => {
-            match install_claude_code_hook() {
-                Ok(()) => true,
-                Err(e) => {
-                    eprintln!(
-                        "  {} Couldn't auto-install Claude Code hook: {}",
-                        "⚠".yellow(),
-                        e
-                    );
-                    false
-                }
+        Some("claude-code") => match install_claude_code_hook() {
+            Ok(()) => true,
+            Err(e) => {
+                eprintln!(
+                    "  {} Couldn't auto-install Claude Code hook: {}",
+                    "⚠".yellow(),
+                    e
+                );
+                false
             }
-        }
+        },
         _ => false,
     };
 
@@ -104,19 +100,13 @@ pub fn run_setup() -> Result<()> {
 /// Print the welcome banner.
 fn print_welcome() {
     println!();
-    println!(
-        "  {}",
-        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━".dimmed()
-    );
+    println!("  {}", "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━".dimmed());
     println!(
         "  {}  {}",
         "lawctl".bold(),
         "— keep your AI agent from breaking things".dimmed()
     );
-    println!(
-        "  {}",
-        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━".dimmed()
-    );
+    println!("  {}", "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━".dimmed());
     println!();
     println!("  Lawctl watches what your AI agent does and stops it from:");
     println!("    - Deleting important files");
@@ -146,10 +136,7 @@ fn ask_agent() -> Result<Option<String>> {
     let has_cursor = agent_is_installed("cursor");
 
     if has_claude || has_cursor {
-        println!(
-            "  {} Found on your machine:",
-            "?".cyan().bold()
-        );
+        println!("  {} Found on your machine:", "?".cyan().bold());
         if has_claude {
             println!("    {} Claude Code", "•".green());
         }
@@ -159,10 +146,7 @@ fn ask_agent() -> Result<Option<String>> {
         println!();
     }
 
-    println!(
-        "  {} What AI agent are you using?",
-        "1".cyan().bold()
-    );
+    println!("  {} What AI agent are you using?", "1".cyan().bold());
     println!();
 
     let options = [
@@ -199,10 +183,7 @@ fn ask_agent() -> Result<Option<String>> {
 /// Ask protection level.
 fn ask_protection_level() -> Result<ProtectionLevel> {
     println!();
-    println!(
-        "  {} How careful should lawctl be?",
-        "2".cyan().bold()
-    );
+    println!("  {} How careful should lawctl be?", "2".cyan().bold());
     println!();
     println!(
         "    {} {}  {}",
@@ -212,18 +193,10 @@ fn ask_protection_level() -> Result<ProtectionLevel> {
     );
     println!("      Blocks dangerous stuff, asks before git push");
     println!();
-    println!(
-        "    {} {}",
-        "2".cyan().bold(),
-        "Strict".bold()
-    );
+    println!("    {} {}", "2".cyan().bold(), "Strict".bold());
     println!("      Locks things down more — for important projects");
     println!();
-    println!(
-        "    {} {}",
-        "3".cyan().bold(),
-        "Relaxed".bold()
-    );
+    println!("    {} {}", "3".cyan().bold(), "Relaxed".bold());
     println!("      Logs everything but doesn't block much — for trying it out");
     println!();
 
@@ -332,10 +305,7 @@ fn install_claude_code_hook() -> Result<()> {
     });
 
     if already_installed {
-        println!(
-            "  {} Claude Code hook already installed",
-            "✓".green()
-        );
+        println!("  {} Claude Code hook already installed", "✓".green());
         return Ok(());
     }
 
@@ -347,22 +317,16 @@ fn install_claude_code_hook() -> Result<()> {
     std::fs::write(&settings_path, content)
         .with_context(|| format!("Failed to write {}", settings_path.display()))?;
 
-    println!(
-        "  {} Installed Claude Code hook",
-        "✓".green()
-    );
-    println!(
-        "    {}",
-        settings_path.display().to_string().dimmed()
-    );
+    println!("  {} Installed Claude Code hook", "✓".green());
+    println!("    {}", settings_path.display().to_string().dimmed());
 
     Ok(())
 }
 
 /// Get the path to Claude Code's user settings.json
 fn claude_code_settings_path() -> Result<PathBuf> {
-    let home = dirs::home_dir()
-        .ok_or_else(|| anyhow::anyhow!("Could not determine home directory"))?;
+    let home =
+        dirs::home_dir().ok_or_else(|| anyhow::anyhow!("Could not determine home directory"))?;
     Ok(home.join(".claude").join("settings.json"))
 }
 
@@ -379,10 +343,7 @@ fn find_hook_binary() -> Result<PathBuf> {
     }
 
     // Check common install locations
-    let candidates = [
-        "/usr/local/bin/lawctl-hook",
-        "/usr/bin/lawctl-hook",
-    ];
+    let candidates = ["/usr/local/bin/lawctl-hook", "/usr/bin/lawctl-hook"];
 
     for candidate in &candidates {
         let path = PathBuf::from(candidate);
@@ -412,24 +373,18 @@ fn print_setup_complete(
     hook_installed: bool,
 ) {
     println!();
-    println!(
-        "  {}",
-        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━".dimmed()
-    );
-    println!(
-        "  {} You're protected!",
-        "✓".green().bold()
-    );
-    println!(
-        "  {}",
-        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━".dimmed()
-    );
+    println!("  {}", "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━".dimmed());
+    println!("  {} You're protected!", "✓".green().bold());
+    println!("  {}", "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━".dimmed());
     println!();
 
     match level {
         ProtectionLevel::Standard => {
             println!("  Lawctl will now:");
-            println!("    {} Block agents from touching your secrets", "•".green());
+            println!(
+                "    {} Block agents from touching your secrets",
+                "•".green()
+            );
             println!("    {} Stop accidental file deletions", "•".green());
             println!("    {} Block dangerous shell commands", "•".green());
             println!("    {} Ask you before any git push", "•".yellow());
@@ -458,16 +413,10 @@ fn print_setup_complete(
 
     if hook_installed && agent == Some("claude-code") {
         // The golden path — nothing more to do
-        println!(
-            "  {} That's it. Just use Claude Code normally.",
-            "→".blue()
-        );
+        println!("  {} That's it. Just use Claude Code normally.", "→".blue());
         println!("    Lawctl runs in the background on every action.");
         println!();
-        println!(
-            "  {} If lawctl blocks something, you'll see:",
-            "ℹ".blue()
-        );
+        println!("  {} If lawctl blocks something, you'll see:", "ℹ".blue());
         println!(
             "    {}",
             "[lawctl] BLOCKED: write '.env' — denied by policy".dimmed()

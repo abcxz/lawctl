@@ -140,9 +140,7 @@ mod tests {
                 action: Action::Write,
                 target: format!("file_{}.rs", i),
                 policy_rule: None,
-                decision: Decision::Allowed {
-                    matched_rule: None,
-                },
+                decision: Decision::Allowed { matched_rule: None },
                 diff: None,
                 approved_by: None,
                 eval_duration_us: None,

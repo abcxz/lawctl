@@ -64,10 +64,7 @@ pub async fn run_agent(options: RunOptions) -> Result<()> {
         "⚖".to_string().bold(),
         env!("CARGO_PKG_VERSION")
     );
-    println!(
-        "  Session: {}",
-        session_id[..8].cyan()
-    );
+    println!("  Session: {}", session_id[..8].cyan());
 
     // Step 1: Parse policy
     let policy_path = if options.policy_path.is_absolute() {
@@ -88,14 +85,8 @@ pub async fn run_agent(options: RunOptions) -> Result<()> {
     let policy = parser::parse_policy_file(&policy_path)?;
     let engine = PolicyEngine::new(policy)?;
 
-    println!(
-        "  Law:     {}",
-        engine.policy_name().cyan()
-    );
-    println!(
-        "  Rules:   {}",
-        engine.policy().rules.len()
-    );
+    println!("  Law:     {}", engine.policy_name().cyan());
+    println!("  Rules:   {}", engine.policy().rules.len());
 
     // Step 2: Set up audit logger
     let logger = AuditLogger::new(&session_id)?;
@@ -115,10 +106,7 @@ pub async fn run_agent(options: RunOptions) -> Result<()> {
     // Step 4: Set up gateway socket
     let socket_path = PathBuf::from(format!("/tmp/lawctl-{}.sock", &session_id[..8]));
 
-    println!(
-        "  Socket:  {}",
-        socket_path.display().to_string().dimmed()
-    );
+    println!("  Socket:  {}", socket_path.display().to_string().dimmed());
     println!();
 
     let gateway = GatewayServer::new(
@@ -133,16 +121,10 @@ pub async fn run_agent(options: RunOptions) -> Result<()> {
 
     // Step 5: Start gateway and agent
     if options.use_docker {
-        println!(
-            "  {} Starting Docker sandbox...",
-            "→".blue()
-        );
+        println!("  {} Starting Docker sandbox...", "→".blue());
         run_with_docker(gateway, &options, &socket_path, &session_id).await?;
     } else {
-        println!(
-            "  {} Running in direct mode (no sandbox)",
-            "→".blue()
-        );
+        println!("  {} Running in direct mode (no sandbox)", "→".blue());
         println!(
             "  {}",
             "  For full isolation, use: lawctl run --docker -- <command>".dimmed()
@@ -181,11 +163,7 @@ async fn run_direct(
 
     // Run the agent command
     let cmd = options.agent_command.join(" ");
-    println!(
-        "  {} Running: {}",
-        "▶".green(),
-        cmd.bold()
-    );
+    println!("  {} Running: {}", "▶".green(), cmd.bold());
     println!();
 
     let mut child = tokio::process::Command::new("sh")
@@ -229,7 +207,11 @@ async fn run_with_docker(
     let sandbox_config = SandboxConfig {
         workspace_path: options.workspace.clone(),
         socket_path: socket_path.to_path_buf(),
-        command: vec!["sh".to_string(), "-c".to_string(), options.agent_command.join(" ")],
+        command: vec![
+            "sh".to_string(),
+            "-c".to_string(),
+            options.agent_command.join(" "),
+        ],
         container_name: Some(format!("lawctl-{}", &session_id[..8])),
         ..Default::default()
     };
@@ -247,10 +229,7 @@ async fn run_with_docker(
 
     // Start container
     let container_id = sandbox.start().await?;
-    println!(
-        "  Container: {}",
-        container_id[..12].dimmed()
-    );
+    println!("  Container: {}", container_id[..12].dimmed());
     println!();
 
     // Wait for container to finish
@@ -261,11 +240,7 @@ async fn run_with_docker(
     gateway_handle.abort();
 
     if exit_code != 0 {
-        println!(
-            "\n  {} Agent exited with code: {}",
-            "⚠".yellow(),
-            exit_code
-        );
+        println!("\n  {} Agent exited with code: {}", "⚠".yellow(), exit_code);
     }
 
     Ok(())
@@ -277,10 +252,7 @@ fn print_session_summary(session_id: &str) -> Result<()> {
     let entries = reader.read_session(session_id).unwrap_or_default();
 
     if entries.is_empty() {
-        println!(
-            "\n  {} No actions were logged this session.",
-            "ℹ".blue()
-        );
+        println!("\n  {} No actions were logged this session.", "ℹ".blue());
         return Ok(());
     }
 

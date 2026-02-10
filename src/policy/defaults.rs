@@ -183,8 +183,17 @@ pub fn get_default_policy(name: &str) -> Option<&'static str> {
 /// List all available default policy template names.
 pub fn available_templates() -> Vec<(&'static str, &'static str)> {
     vec![
-        ("safe-dev", "Sensible defaults for development — blocks dangerous stuff, protects secrets"),
-        ("safe-ci", "Strict policy for CI/CD — no git push, restricted writes and network"),
-        ("permissive", "Allow everything with logging — for testing and trust-building"),
+        (
+            "safe-dev",
+            "Sensible defaults for development — blocks dangerous stuff, protects secrets",
+        ),
+        (
+            "safe-ci",
+            "Strict policy for CI/CD — no git push, restricted writes and network",
+        ),
+        (
+            "permissive",
+            "Allow everything with logging — for testing and trust-building",
+        ),
     ]
 }

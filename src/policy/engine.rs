@@ -76,10 +76,7 @@ impl PolicyEngine {
                                 // - exactly "/tmp"
                                 // - anything starting with "/tmp/" (e.g., "/tmp/foo.txt")
                                 let trimmed = p.trim_end_matches('/');
-                                vec![
-                                    trimmed.to_string(),
-                                    format!("{}/**", trimmed),
-                                ]
+                                vec![trimmed.to_string(), format!("{}/**", trimmed)]
                             }
                         })
                         .collect();
@@ -134,10 +131,7 @@ impl PolicyEngine {
                     // For other rules, we just skip.
                     if matches!(compiled.rule, Rule::Deny { .. }) {
                         return Decision::Allowed {
-                            matched_rule: Some(format!(
-                                "{} (exception)",
-                                compiled.rule.describe()
-                            )),
+                            matched_rule: Some(format!("{} (exception)", compiled.rule.describe())),
                         };
                     }
                 }
@@ -238,7 +232,10 @@ impl PolicyEngine {
     fn rule_to_decision(&self, rule: &Rule) -> Decision {
         match rule {
             Rule::Deny {
-                reason, action, conditions, ..
+                reason,
+                action,
+                conditions,
+                ..
             } => {
                 let default_reason = if !conditions.if_path_matches.is_empty() {
                     format!(
@@ -267,11 +264,7 @@ impl PolicyEngine {
             Rule::Allow { .. } => Decision::Allowed {
                 matched_rule: Some(rule.describe()),
             },
-            Rule::RequireApproval {
-                prompt,
-                action,
-                ..
-            } => {
+            Rule::RequireApproval { prompt, action, .. } => {
                 let default_reason = format!(
                     "Policy '{}' requires approval for {}",
                     self.policy.law, action
@@ -299,9 +292,7 @@ impl PolicyEngine {
                 matched_rule: None,
             }
         } else {
-            Decision::Allowed {
-                matched_rule: None,
-            }
+            Decision::Allowed { matched_rule: None }
         }
     }
 
@@ -433,8 +424,7 @@ rules:
         assert!(engine.evaluate(&Action::Write, &ctx).is_allowed());
 
         // Large diff — exceeds max, rule doesn't match, falls to default
-        let ctx =
-            ActionContext::new("src/main.rs").with_diff("1\n2\n3\n4\n5\n6\n7\n8\n9\n10");
+        let ctx = ActionContext::new("src/main.rs").with_diff("1\n2\n3\n4\n5\n6\n7\n8\n9\n10");
         let decision = engine.evaluate(&Action::Write, &ctx);
         // Write is not destructive, so default = allow
         assert!(decision.is_allowed());

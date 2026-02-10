@@ -84,14 +84,15 @@ pub fn lint_policy(policy: &Policy) -> Vec<LintWarning> {
 fn check_secrets_protection(policy: &Policy, warnings: &mut Vec<LintWarning>) {
     let has_secrets_deny = policy.rules.iter().any(|rule| {
         if let Rule::Deny {
-            action,
-            conditions,
-            ..
+            action, conditions, ..
         } = rule
         {
             *action == Action::Write
                 && conditions.if_path_matches.iter().any(|p| {
-                    p.contains(".env") || p.contains(".ssh") || p.contains(".pem") || p.contains(".key")
+                    p.contains(".env")
+                        || p.contains(".ssh")
+                        || p.contains(".pem")
+                        || p.contains(".key")
                 })
         } else {
             false
@@ -108,9 +109,10 @@ fn check_secrets_protection(policy: &Policy, warnings: &mut Vec<LintWarning>) {
 
 /// Check: does the policy restrict file deletions?
 fn check_delete_protection(policy: &Policy, warnings: &mut Vec<LintWarning>) {
-    let has_delete_rule = policy.rules.iter().any(|rule| {
-        *rule.action() == Action::Delete
-    });
+    let has_delete_rule = policy
+        .rules
+        .iter()
+        .any(|rule| *rule.action() == Action::Delete);
 
     if !has_delete_rule {
         warnings.push(LintWarning::warn_with_fix(
@@ -124,9 +126,7 @@ fn check_delete_protection(policy: &Policy, warnings: &mut Vec<LintWarning>) {
 fn check_dangerous_commands(policy: &Policy, warnings: &mut Vec<LintWarning>) {
     let has_cmd_deny = policy.rules.iter().any(|rule| {
         if let Rule::Deny {
-            action,
-            conditions,
-            ..
+            action, conditions, ..
         } = rule
         {
             *action == Action::RunCmd && !conditions.if_matches.is_empty()
@@ -145,9 +145,10 @@ fn check_dangerous_commands(policy: &Policy, warnings: &mut Vec<LintWarning>) {
 
 /// Check: does the policy address git push?
 fn check_git_protection(policy: &Policy, warnings: &mut Vec<LintWarning>) {
-    let has_git_rule = policy.rules.iter().any(|rule| {
-        *rule.action() == Action::GitPush
-    });
+    let has_git_rule = policy
+        .rules
+        .iter()
+        .any(|rule| *rule.action() == Action::GitPush);
 
     if !has_git_rule {
         warnings.push(LintWarning::warn_with_fix(
@@ -159,9 +160,10 @@ fn check_git_protection(policy: &Policy, warnings: &mut Vec<LintWarning>) {
 
 /// Check: does the policy address network access?
 fn check_network_rules(policy: &Policy, warnings: &mut Vec<LintWarning>) {
-    let has_network_rule = policy.rules.iter().any(|rule| {
-        *rule.action() == Action::Network
-    });
+    let has_network_rule = policy
+        .rules
+        .iter()
+        .any(|rule| *rule.action() == Action::Network);
 
     if !has_network_rule {
         warnings.push(LintWarning::info(
@@ -207,9 +209,7 @@ fn check_rule_ordering(policy: &Policy, warnings: &mut Vec<LintWarning>) {
 fn check_catch_all(policy: &Policy, warnings: &mut Vec<LintWarning>) {
     let has_write_allow = policy.rules.iter().any(|rule| {
         if let Rule::Allow {
-            action,
-            conditions,
-            ..
+            action, conditions, ..
         } = rule
         {
             *action == Action::Write && conditions.if_path_matches.is_empty()

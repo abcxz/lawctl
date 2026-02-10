@@ -70,10 +70,7 @@ impl GatewayServer {
         let listener = UnixListener::bind(&self.socket_path)
             .with_context(|| format!("Failed to bind socket: {}", self.socket_path.display()))?;
 
-        tracing::info!(
-            "Gateway listening on {}",
-            self.socket_path.display()
-        );
+        tracing::info!("Gateway listening on {}", self.socket_path.display());
 
         loop {
             match listener.accept().await {
@@ -87,13 +84,7 @@ impl GatewayServer {
 
                     tokio::spawn(async move {
                         if let Err(e) = handle_connection(
-                            stream,
-                            engine,
-                            workspace,
-                            session_id,
-                            agent_name,
-                            logger,
-                            approval,
+                            stream, engine, workspace, session_id, agent_name, logger, approval,
                         )
                         .await
                         {
@@ -185,9 +176,7 @@ async fn process_request(
                 context = context.with_command(payload.clone());
             }
             crate::policy::Action::Network => {
-                if let Some(domain) =
-                    handlers::network::extract_domain(payload)
-                {
+                if let Some(domain) = handlers::network::extract_domain(payload) {
                     context = context.with_domain(domain);
                 }
             }
@@ -211,10 +200,7 @@ async fn process_request(
                     None,
                 ),
                 Err(e) => (
-                    GatewayResponse::internal_error(
-                        request.request_id.clone(),
-                        e.to_string(),
-                    ),
+                    GatewayResponse::internal_error(request.request_id.clone(), e.to_string()),
                     decision.clone(),
                     None,
                 ),
@@ -230,10 +216,7 @@ async fn process_request(
             let approval_request = crate::approval::types::ApprovalRequest {
                 action: request.action.clone(),
                 target: request.target.clone(),
-                payload_preview: request
-                    .payload
-                    .as_ref()
-                    .map(|p| truncate_preview(p, 500)),
+                payload_preview: request.payload.as_ref().map(|p| truncate_preview(p, 500)),
                 reason: reason.clone(),
             };
 
@@ -320,20 +303,14 @@ async fn process_request(
 async fn execute_action(request: &GatewayRequest, workspace_root: &Path) -> Result<String> {
     match request.action {
         crate::policy::Action::Write => {
-            let content = request
-                .payload
-                .as_deref()
-                .unwrap_or("");
+            let content = request.payload.as_deref().unwrap_or("");
             handlers::file_write::execute_write(workspace_root, &request.target, content)
         }
         crate::policy::Action::Delete => {
             handlers::file_delete::execute_delete(workspace_root, &request.target)
         }
         crate::policy::Action::RunCmd => {
-            let command = request
-                .payload
-                .as_deref()
-                .unwrap_or(&request.target);
+            let command = request.payload.as_deref().unwrap_or(&request.target);
             let result = handlers::shell::execute_command(workspace_root, command)?;
             Ok(result.to_output())
         }
@@ -341,10 +318,7 @@ async fn execute_action(request: &GatewayRequest, workspace_root: &Path) -> Resu
             handlers::git::execute_git_push(workspace_root, &request.target)
         }
         crate::policy::Action::Network => {
-            let url = request
-                .payload
-                .as_deref()
-                .unwrap_or(&request.target);
+            let url = request.payload.as_deref().unwrap_or(&request.target);
             handlers::network::validate_network_request(url)
         }
     }

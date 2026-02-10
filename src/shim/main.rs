@@ -65,7 +65,10 @@ fn main() {
 
         // Unknown invocation — pass through (not intercepted)
         _ => {
-            eprintln!("[lawctl] Shim called as '{}' — not intercepted, passing through", invoked_as);
+            eprintln!(
+                "[lawctl] Shim called as '{}' — not intercepted, passing through",
+                invoked_as
+            );
             handle_passthrough(&invoked_as, &args[1..])
         }
     };
@@ -98,7 +101,9 @@ fn handle_rm(args: &[String]) -> anyhow::Result<()> {
             eprintln!(
                 "[lawctl] BLOCKED: cannot delete '{}' — {}",
                 arg,
-                response.error.unwrap_or_else(|| "denied by policy".to_string())
+                response
+                    .error
+                    .unwrap_or_else(|| "denied by policy".to_string())
             );
             process::exit(1);
         }
@@ -130,8 +135,9 @@ fn handle_git(args: &[String]) -> anyhow::Result<()> {
             let client = GatewayClient::from_env()?;
 
             // Extract branch from args (default: current branch)
-            let branch = args.get(2) // git push <remote> <branch>
-                .or(args.get(1))     // git push <branch>
+            let branch = args
+                .get(2) // git push <remote> <branch>
+                .or(args.get(1)) // git push <branch>
                 .map(|s| s.as_str())
                 .unwrap_or("HEAD");
 
@@ -144,7 +150,9 @@ fn handle_git(args: &[String]) -> anyhow::Result<()> {
             } else {
                 eprintln!(
                     "[lawctl] BLOCKED: git push denied — {}",
-                    response.error.unwrap_or_else(|| "denied by policy".to_string())
+                    response
+                        .error
+                        .unwrap_or_else(|| "denied by policy".to_string())
                 );
                 process::exit(1);
             }
@@ -202,7 +210,9 @@ fn handle_exec(args: &[String]) -> anyhow::Result<()> {
     } else {
         eprintln!(
             "[lawctl] BLOCKED: command denied — {}",
-            response.error.unwrap_or_else(|| "denied by policy".to_string())
+            response
+                .error
+                .unwrap_or_else(|| "denied by policy".to_string())
         );
         process::exit(1);
     }
@@ -231,10 +241,7 @@ fn handle_response(response: &GatewayResponse, action: &str, target: &str) -> an
             "[lawctl] BLOCKED: {} '{}' — {}",
             action,
             target,
-            response
-                .error
-                .as_deref()
-                .unwrap_or("denied by policy")
+            response.error.as_deref().unwrap_or("denied by policy")
         );
         process::exit(1);
     }
@@ -256,9 +263,7 @@ fn handle_passthrough(command: &str, args: &[String]) -> anyhow::Result<()> {
         }
         Err(_) => {
             // Try without the /usr/bin prefix
-            let status = process::Command::new(command)
-                .args(args)
-                .status()?;
+            let status = process::Command::new(command).args(args).status()?;
             if !status.success() {
                 process::exit(status.code().unwrap_or(1));
             }
