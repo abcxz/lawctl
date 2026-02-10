@@ -1,0 +1,59 @@
+# Lawctl Policy: safe-dev
+# A sensible default for everyday development.
+# Blocks dangerous actions, protects your secrets, and asks before pushing code.
+
+law: safe-dev-v1
+
+description: >
+  Default safety policy for development. Protects secrets, prevents
+  accidental deletions, and requires your approval before pushing code.
+
+rules:
+  # -- Protect your secrets --
+  - deny: write
+    if_path_matches: ["*.env", "*.env.*", ".ssh/*", "*.pem", "*.key", "*.p12", "*.keystore"]
+    reason: "Protected file — agents cannot modify secrets or credentials"
+
+  # -- Prevent accidental deletions --
+  - deny: delete
+    unless_path: ["/tmp", "tmp/", "dist/", "build/", "target/", "node_modules/"]
+
+  # -- Block dangerous shell commands --
+  - deny: run_cmd
+    if_matches:
+      - "rm -rf *"
+      - "curl * | bash"
+      - "curl * | sh"
+      - "wget * | bash"
+      - "wget * | sh"
+      - "chmod 777 *"
+
+  # -- Require approval for git push --
+  - require_approval: git_push
+    prompt: "The AI agent wants to push code. Review the changes before approving."
+
+  # -- Allow writes to common source directories --
+  - allow: write
+    if_path_matches: ["src/**", "lib/**", "app/**", "tests/**", "test/**"]
+    max_diff_lines: 500
+
+  # -- Allow safe shell commands --
+  - allow: run_cmd
+    if_matches:
+      - "cargo *"
+      - "npm *"
+      - "pnpm *"
+      - "yarn *"
+      - "pip *"
+      - "python *"
+      - "node *"
+      - "go *"
+      - "make *"
+      - "ls *"
+      - "cat *"
+      - "grep *"
+      - "git status*"
+      - "git diff*"
+      - "git log*"
+      - "git add*"
+      - "git commit*"

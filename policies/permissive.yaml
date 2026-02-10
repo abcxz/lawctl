@@ -1,0 +1,13 @@
+# Lawctl Policy: permissive
+# Allows everything, but logs every action.
+# WARNING: This provides NO protection. It's monitoring-only.
+
+law: permissive-v1
+
+rules:
+  - allow: write
+  - allow: delete
+  - allow: run_cmd
+  - require_approval: git_push
+    prompt: "Even in permissive mode, git push requires your OK."
+  - allow: network

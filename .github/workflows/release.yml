@@ -1,0 +1,134 @@
+# Build and release lawctl binaries when a version tag is pushed.
+#
+# Usage:
+#   git tag v0.1.0
+#   git push --tags
+#
+# This builds for:
+#   - macOS (Apple Silicon + Intel)
+#   - Linux (x86_64 + aarch64)
+#
+# Then creates a GitHub Release with all the tarballs attached.
+
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    name: Build ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: aarch64-apple-darwin
+            os: macos-14
+          - target: x86_64-apple-darwin
+            os: macos-13
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+          - target: aarch64-unknown-linux-gnu
+            os: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Install cross-compilation tools (Linux aarch64)
+        if: matrix.target == 'aarch64-unknown-linux-gnu'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu
+          echo "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc" >> $GITHUB_ENV
+
+      - name: Build release binaries
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Package binaries
+        shell: bash
+        run: |
+          VERSION="${GITHUB_REF_NAME}"
+          ARCHIVE="lawctl-${VERSION}-${{ matrix.target }}.tar.gz"
+
+          cd target/${{ matrix.target }}/release
+
+          # Package all three binaries
+          tar -czf "../../../${ARCHIVE}" lawctl lawctl-hook lawctl-shim
+
+          cd ../../..
+          shasum -a 256 "${ARCHIVE}" > "${ARCHIVE}.sha256"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: lawctl-${{ matrix.target }}
+          path: |
+            lawctl-*.tar.gz
+            lawctl-*.tar.gz.sha256
+
+  release:
+    name: Create GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            artifacts/lawctl-*.tar.gz
+            artifacts/lawctl-*.tar.gz.sha256
+
+  # Update the Homebrew formula automatically
+  homebrew:
+    name: Update Homebrew formula
+    needs: release
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download macOS artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Update Homebrew formula
+        env:
+          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          ARM_SHA=$(cat artifacts/lawctl-${GITHUB_REF_NAME}-aarch64-apple-darwin.tar.gz.sha256 | awk '{print $1}')
+          INTEL_SHA=$(cat artifacts/lawctl-${GITHUB_REF_NAME}-x86_64-apple-darwin.tar.gz.sha256 | awk '{print $1}')
+          LINUX_SHA=$(cat artifacts/lawctl-${GITHUB_REF_NAME}-x86_64-unknown-linux-gnu.tar.gz.sha256 | awk '{print $1}')
+
+          echo "Version: ${VERSION}"
+          echo "ARM SHA: ${ARM_SHA}"
+          echo "Intel SHA: ${INTEL_SHA}"
+          echo "Linux SHA: ${LINUX_SHA}"
+
+          # This will be used to auto-update the homebrew-tap repo
+          # For now, output the values so you can update manually
+          echo "::notice::Update homebrew-tap/Formula/lawctl.rb with version=${VERSION} arm_sha=${ARM_SHA} intel_sha=${INTEL_SHA} linux_sha=${LINUX_SHA}"

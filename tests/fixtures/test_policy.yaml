@@ -1,0 +1,22 @@
+# Test policy for integration tests
+law: test-policy-v1
+
+rules:
+  - deny: write
+    if_path_matches: ["*.env", ".ssh/*", "*.pem"]
+    reason: "Cannot write to secret files"
+
+  - deny: delete
+    unless_path: /tmp
+
+  - deny: run_cmd
+    if_matches: ["rm -rf *", "curl * | bash"]
+
+  - require_approval: git_push
+
+  - allow: write
+    if_path_matches: ["src/**", "tests/**"]
+    max_diff_lines: 100
+
+  - allow: run_cmd
+    if_matches: ["cargo *", "npm *", "ls *"]

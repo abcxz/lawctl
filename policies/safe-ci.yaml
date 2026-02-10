@@ -1,0 +1,27 @@
+# Lawctl Policy: safe-ci
+# Strict policy for CI/CD pipelines.
+# No human is watching — deny anything risky.
+
+law: safe-ci-v1
+
+rules:
+  - deny: write
+    if_path_matches: ["*.env", "*.env.*", ".ssh/*", "*.pem", "*.key"]
+
+  - deny: git_push
+    reason: "Git push is not allowed in CI"
+
+  - allow: write
+    if_path_matches: ["dist/**", "build/**", "target/**", "out/**"]
+
+  - deny: run_cmd
+    if_matches: ["rm -rf *", "curl * | bash", "wget * | sh"]
+
+  - allow: run_cmd
+    if_matches: ["cargo *", "npm *", "pnpm *", "yarn *", "make *"]
+
+  - deny: network
+    unless_domain: ["github.com", "npmjs.org", "registry.npmjs.org", "pypi.org", "crates.io"]
+
+  - deny: delete
+    reason: "File deletion is not allowed in CI"
