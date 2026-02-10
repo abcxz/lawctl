@@ -68,7 +68,7 @@ impl AuditReader {
         let mut entries: Vec<PathBuf> = fs::read_dir(&self.log_dir)?
             .filter_map(|e| e.ok())
             .map(|e| e.path())
-            .filter(|p| p.extension().map_or(false, |e| e == "jsonl"))
+            .filter(|p| p.extension().is_some_and(|e| e == "jsonl"))
             .collect();
 
         // Sort by modification time, most recent first
@@ -89,7 +89,7 @@ impl AuditReader {
 
         let mut sessions: Vec<String> = fs::read_dir(&self.log_dir)?
             .filter_map(|e| e.ok())
-            .filter(|e| e.path().extension().map_or(false, |ext| ext == "jsonl"))
+            .filter(|e| e.path().extension().is_some_and(|ext| ext == "jsonl"))
             .filter_map(|e| {
                 e.path()
                     .file_stem()

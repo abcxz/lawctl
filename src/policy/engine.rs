@@ -201,18 +201,13 @@ impl PolicyEngine {
         }
 
         // Check if_matches (for run_cmd): command must match at least one pattern
-        if !conditions.if_matches.is_empty() {
-            match action {
-                Action::RunCmd => {
-                    if let Some(ref cmd) = context.command {
-                        if !command_matches(cmd, &conditions.if_matches) {
-                            return ConditionResult::NotMatched;
-                        }
-                    } else {
-                        return ConditionResult::NotMatched;
-                    }
+        if !conditions.if_matches.is_empty() && action == &Action::RunCmd {
+            if let Some(ref cmd) = context.command {
+                if !command_matches(cmd, &conditions.if_matches) {
+                    return ConditionResult::NotMatched;
                 }
-                _ => {}
+            } else {
+                return ConditionResult::NotMatched;
             }
         }
 

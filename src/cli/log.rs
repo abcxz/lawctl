@@ -64,15 +64,11 @@ pub fn run_log(
         println!("  Agent: {}", summary.agent);
         println!();
         println!(
-            "  {} {} | {} {} | {} {} | {} {}",
+            "  {} total | {} allowed | {} denied | {} approved",
             summary.total_actions.to_string().bold(),
-            "total",
             summary.allowed.to_string().green().bold(),
-            "allowed",
             summary.denied.to_string().red().bold(),
-            "denied",
             summary.approved.to_string().yellow().bold(),
-            "approved",
         );
 
         if let (Some(start), Some(end)) = (summary.start_time, summary.end_time) {

@@ -262,15 +262,11 @@ fn print_session_summary(session_id: &str) -> Result<()> {
     println!("  {} Session complete", "─".repeat(40).dimmed());
     println!();
     println!(
-        "  {} {} | {} {} | {} {} | {} {}",
+        "  {} actions | {} allowed | {} denied | {} approved",
         summary.total_actions.to_string().bold(),
-        "actions",
         summary.allowed.to_string().green().bold(),
-        "allowed",
         summary.denied.to_string().red().bold(),
-        "denied",
         summary.approved.to_string().yellow().bold(),
-        "approved",
     );
     println!();
     println!(

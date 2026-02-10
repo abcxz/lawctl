@@ -79,11 +79,11 @@ impl MountConfig {
     pub fn is_excluded(&self, path: &Path) -> bool {
         self.excluded.iter().any(|excluded| {
             path.starts_with(excluded)
-                || path.file_name().map_or(false, |name| {
+                || path.file_name().is_some_and(|name| {
                     let name = name.to_string_lossy();
                     EXCLUDED_PATHS.iter().any(|pattern| {
-                        if pattern.starts_with('*') {
-                            name.ends_with(&pattern[1..])
+                        if let Some(stripped) = pattern.strip_prefix('*') {
+                            name.ends_with(stripped)
                         } else {
                             name.as_ref() == *pattern
                         }

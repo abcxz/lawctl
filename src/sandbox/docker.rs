@@ -99,7 +99,7 @@ impl DockerSandbox {
         let container_name = self.config.container_name.clone().unwrap_or_else(|| {
             format!(
                 "lawctl-{}",
-                uuid::Uuid::new_v4().to_string()[..8].to_string()
+                &uuid::Uuid::new_v4().to_string()[..8]
             )
         });
 

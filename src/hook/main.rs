@@ -198,7 +198,6 @@ fn map_tool_to_actions(input: &HookInput) -> Option<Vec<(Action, ActionContext)>
                 let branch = trimmed
                     .strip_prefix("git push")
                     .unwrap_or("")
-                    .trim()
                     .split_whitespace()
                     .last()
                     .unwrap_or("main");

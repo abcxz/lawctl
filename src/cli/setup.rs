@@ -159,9 +159,9 @@ fn ask_agent() -> Result<Option<String>> {
 
     for (i, (label, _)) in options.iter().enumerate() {
         let num = (i + 1).to_string();
-        let marker = match label {
-            &"Claude Code" if has_claude => num.green().bold().to_string(),
-            &"Cursor" if has_cursor => num.green().bold().to_string(),
+        let marker = match *label {
+            "Claude Code" if has_claude => num.green().bold().to_string(),
+            "Cursor" if has_cursor => num.green().bold().to_string(),
             _ => num.cyan().bold().to_string(),
         };
         println!("    {} {}", marker, label);
