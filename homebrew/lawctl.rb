@@ -16,19 +16,19 @@ class Lawctl < Formula
   on_macos do
     on_arm do
       url "https://github.com/abcxz/lawctl/releases/download/v#{version}/lawctl-v#{version}-aarch64-apple-darwin.tar.gz"
-      sha256 "PLACEHOLDER_ARM_SHA256"
+      sha256 "449681a72f4a715c06f356e7a28f4c65243c3fdd8c91398d22f5c4d3d3efe6e1"
     end
 
     on_intel do
       url "https://github.com/abcxz/lawctl/releases/download/v#{version}/lawctl-v#{version}-x86_64-apple-darwin.tar.gz"
-      sha256 "PLACEHOLDER_INTEL_SHA256"
+      sha256 "7f5b5650af0a523c291cfa89d949daea31cc07d26a3d87224f177a990d5afa80"
     end
   end
 
   on_linux do
     on_intel do
       url "https://github.com/abcxz/lawctl/releases/download/v#{version}/lawctl-v#{version}-x86_64-unknown-linux-gnu.tar.gz"
-      sha256 "PLACEHOLDER_LINUX_SHA256"
+      sha256 "bc538070587b1c3f8333530df21b7354e88fc39f82ef7487a30c5d8409690a72"
     end
   end
 
