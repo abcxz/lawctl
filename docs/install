@@ -3,7 +3,6 @@
 #
 # Usage:
 #   curl -fsSL https://lawctl.dev/install | sh
-#   curl -fsSL https://raw.githubusercontent.com/abcxz/lawctl/main/scripts/install.sh | sh
 #
 # What this does:
 #   1. Figures out if you're on Mac or Linux

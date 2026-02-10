@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>lawctl — keep your AI agent from breaking things</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --border: #30363d;
+      --text: #e6edf3;
+      --text-dim: #8b949e;
+      --green: #3fb950;
+      --blue: #58a6ff;
+      --red: #f85149;
+      --yellow: #d29922;
+      --purple: #bc8cff;
+      --mono: 'SF Mono', 'Cascadia Code', 'Fira Code', 'JetBrains Mono', monospace;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      padding: 80px 0 40px;
+      text-align: center;
+    }
+
+    .hero h1 {
+      font-size: 3rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 12px;
+    }
+
+    .hero h1 span {
+      color: var(--green);
+    }
+
+    .hero .tagline {
+      font-size: 1.25rem;
+      color: var(--text-dim);
+      max-width: 480px;
+      margin: 0 auto 40px;
+    }
+
+    /* ── Install box ── */
+    .install-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin: 0 auto 16px;
+      max-width: 600px;
+    }
+
+    .install-box .label {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-dim);
+      margin-bottom: 12px;
+    }
+
+    .install-cmd {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+
+    .install-cmd:hover {
+      border-color: var(--green);
+    }
+
+    .install-cmd code {
+      font-family: var(--mono);
+      font-size: 0.95rem;
+      color: var(--green);
+      flex: 1;
+      user-select: all;
+    }
+
+    .install-cmd .copy-btn {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 12px;
+      color: var(--text-dim);
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-family: var(--mono);
+      transition: all 0.2s;
+    }
+
+    .install-cmd .copy-btn:hover {
+      color: var(--text);
+      border-color: var(--text-dim);
+    }
+
+    .install-note {
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 0.85rem;
+      margin-bottom: 48px;
+    }
+
+    .install-note a {
+      color: var(--blue);
+      text-decoration: none;
+    }
+
+    .install-note a:hover {
+      text-decoration: underline;
+    }
+
+    /* ── Then what ── */
+    .then-what {
+      margin-bottom: 64px;
+    }
+
+    .then-what h2 {
+      font-size: 1.1rem;
+      color: var(--text-dim);
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    .step {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+    }
+
+    .step-num {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-dim);
+      flex-shrink: 0;
+    }
+
+    .step-content {
+      padding-top: 4px;
+    }
+
+    .step-content code {
+      font-family: var(--mono);
+      background: var(--surface);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      color: var(--green);
+    }
+
+    .step-content .dim {
+      color: var(--text-dim);
+      font-size: 0.9rem;
+    }
+
+    /* ── What it does ── */
+    .features {
+      padding: 48px 0;
+      border-top: 1px solid var(--border);
+    }
+
+    .features h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 32px;
+      text-align: center;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 560px) {
+      .feature-grid { grid-template-columns: 1fr; }
+      .hero h1 { font-size: 2.2rem; }
+    }
+
+    .feature {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+    }
+
+    .feature .icon {
+      font-size: 1.4rem;
+      margin-bottom: 8px;
+    }
+
+    .feature h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .feature p {
+      font-size: 0.9rem;
+      color: var(--text-dim);
+      line-height: 1.5;
+    }
+
+    /* ── Terminal demo ── */
+    .demo {
+      padding: 48px 0;
+      border-top: 1px solid var(--border);
+    }
+
+    .demo h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+
+    .terminal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      max-width: 560px;
+      margin: 0 auto;
+    }
+
+    .terminal-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .terminal-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+
+    .terminal-dot.red { background: var(--red); }
+    .terminal-dot.yellow { background: var(--yellow); }
+    .terminal-dot.green { background: var(--green); }
+
+    .terminal-body {
+      padding: 20px;
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      line-height: 1.8;
+    }
+
+    .terminal-body .prompt { color: var(--blue); }
+    .terminal-body .cmd { color: var(--text); }
+    .terminal-body .blocked { color: var(--red); }
+    .terminal-body .ok { color: var(--green); }
+    .terminal-body .dim { color: var(--text-dim); }
+
+    /* ── How it works ── */
+    .how {
+      padding: 48px 0;
+      border-top: 1px solid var(--border);
+    }
+
+    .how h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+
+    .how .subtitle {
+      text-align: center;
+      color: var(--text-dim);
+      margin-bottom: 32px;
+      font-size: 0.95rem;
+    }
+
+    .how-diagram {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .how-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 20px;
+      text-align: center;
+      font-size: 0.9rem;
+    }
+
+    .how-box.highlight {
+      border-color: var(--green);
+      color: var(--green);
+      font-weight: 600;
+    }
+
+    .how-arrow {
+      color: var(--text-dim);
+      font-size: 1.2rem;
+    }
+
+    .how-note {
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 0.85rem;
+      margin-top: 8px;
+    }
+
+    /* ── Footer ── */
+    footer {
+      padding: 40px 0;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 0.85rem;
+    }
+
+    footer a {
+      color: var(--blue);
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <h1><span>lawctl</span></h1>
+      <p class="tagline">Keep your AI coding agent from breaking things. Install once, forget about it.</p>
+
+      <div class="install-box">
+        <div class="label">Install</div>
+        <div class="install-cmd" onclick="copyInstall()">
+          <code id="install-text">curl -fsSL https://lawctl.dev/install | sh</code>
+          <button class="copy-btn" id="copy-btn">copy</button>
+        </div>
+      </div>
+      <p class="install-note">
+        Works on Mac and Linux &middot;
+        <a href="https://github.com/abcxz/lawctl/releases/latest" id="pkg-link">Download .pkg for Mac</a> &middot;
+        <a href="https://github.com/abcxz/lawctl">GitHub</a>
+      </p>
+    </div>
+  </section>
+
+  <!-- Then what -->
+  <section class="then-what">
+    <div class="container">
+      <h2>Then what?</h2>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            Open your project in terminal and type <code>lawctl</code>
+            <div class="dim">Asks 2 questions, takes 30 seconds</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            Use your AI agent like normal
+            <div class="dim">Claude Code, Cursor, Codex, whatever</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            That's it. lawctl runs invisibly.
+            <div class="dim">Blocks dangerous stuff, logs everything</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- What it does -->
+  <section class="features">
+    <div class="container">
+      <h2>What does it actually do?</h2>
+      <div class="feature-grid">
+        <div class="feature">
+          <div class="icon">&#128274;</div>
+          <h3>Protects your secrets</h3>
+          <p>Blocks agents from reading or leaking .env files, SSH keys, API tokens, and credentials.</p>
+        </div>
+        <div class="feature">
+          <div class="icon">&#128721;</div>
+          <h3>Stops dangerous commands</h3>
+          <p>Catches rm -rf, curl|bash, and other commands that could wreck your machine.</p>
+        </div>
+        <div class="feature">
+          <div class="icon">&#128230;</div>
+          <h3>Controls git push</h3>
+          <p>Asks permission before pushing code. No surprise deploys.</p>
+        </div>
+        <div class="feature">
+          <div class="icon">&#128196;</div>
+          <h3>Logs everything</h3>
+          <p>Full audit trail of every action your agent took. Run <code>lawctl log</code> to review.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Terminal demo -->
+  <section class="demo">
+    <div class="container">
+      <h2>What it looks like</h2>
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dot red"></div>
+          <div class="terminal-dot yellow"></div>
+          <div class="terminal-dot green"></div>
+        </div>
+        <div class="terminal-body">
+          <div><span class="dim">Claude tries to read your .env...</span></div>
+          <div><span class="blocked">[lawctl] BLOCKED: write '.env' -- denied by policy</span></div>
+          <div>&nbsp;</div>
+          <div><span class="dim">Claude tries rm -rf /...</span></div>
+          <div><span class="blocked">[lawctl] BLOCKED: run_cmd 'rm -rf /' -- denied by policy</span></div>
+          <div>&nbsp;</div>
+          <div><span class="dim">Claude edits src/app.ts...</span></div>
+          <div><span class="ok">[lawctl] allowed: write 'src/app.ts'</span></div>
+          <div>&nbsp;</div>
+          <div><span class="prompt">$</span> <span class="cmd">lawctl log</span></div>
+          <div><span class="dim">  3 actions | 1 allowed | 2 blocked</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section class="how">
+    <div class="container">
+      <h2>How it works</h2>
+      <p class="subtitle">lawctl sits between your AI agent and your system</p>
+      <div class="how-diagram">
+        <div class="how-box">AI Agent</div>
+        <div class="how-arrow">&rarr;</div>
+        <div class="how-box highlight">lawctl</div>
+        <div class="how-arrow">&rarr;</div>
+        <div class="how-box">Your Files</div>
+      </div>
+      <p class="how-note">Every file write, command, and git push goes through lawctl first. Under 1ms overhead.</p>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <p>
+        <a href="https://github.com/abcxz/lawctl">GitHub</a>
+        &middot;
+        MIT License
+        &middot;
+        Made for people who use AI agents to write code
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    function copyInstall() {
+      const text = document.getElementById('install-text').textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = document.getElementById('copy-btn');
+        btn.textContent = 'copied!';
+        btn.style.color = '#3fb950';
+        btn.style.borderColor = '#3fb950';
+        setTimeout(() => {
+          btn.textContent = 'copy';
+          btn.style.color = '';
+          btn.style.borderColor = '';
+        }, 2000);
+      });
+    }
+  </script>
+</body>
+</html>

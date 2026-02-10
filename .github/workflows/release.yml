@@ -101,6 +101,60 @@ jobs:
             artifacts/lawctl-*.tar.gz
             artifacts/lawctl-*.tar.gz.sha256
 
+  # Build a macOS .pkg installer (double-click to install)
+  macos-pkg:
+    name: Build macOS .pkg
+    needs: build
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download macOS ARM artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: lawctl-aarch64-apple-darwin
+          path: artifacts
+
+      - name: Download macOS Intel artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: lawctl-x86_64-apple-darwin
+          path: artifacts
+
+      - name: Create universal binaries and .pkg
+        run: |
+          VERSION="${GITHUB_REF_NAME}"
+          mkdir -p arm intel universal
+
+          # Extract both architectures
+          tar -xzf artifacts/lawctl-${VERSION}-aarch64-apple-darwin.tar.gz -C arm
+          tar -xzf artifacts/lawctl-${VERSION}-x86_64-apple-darwin.tar.gz -C intel
+
+          # Create universal (fat) binaries using lipo
+          for BIN in lawctl lawctl-hook lawctl-shim; do
+            if [ -f "arm/$BIN" ] && [ -f "intel/$BIN" ]; then
+              lipo -create "arm/$BIN" "intel/$BIN" -output "universal/$BIN"
+              chmod +x "universal/$BIN"
+            fi
+          done
+
+          # Build the .pkg
+          # pkgbuild installs to /usr/local/bin by default
+          mkdir -p pkg-root/usr/local/bin
+          cp universal/* pkg-root/usr/local/bin/
+
+          pkgbuild \
+            --identifier "dev.lawctl.cli" \
+            --version "${VERSION#v}" \
+            --root pkg-root \
+            --install-location / \
+            "lawctl-${VERSION}-macos-universal.pkg"
+
+      - name: Upload .pkg to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: lawctl-*.pkg
+
   # Update the Homebrew formula automatically
   homebrew:
     name: Update Homebrew formula
